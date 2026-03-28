@@ -215,7 +215,7 @@ export default function DemoPage() {
                   {result.raw_text && (
                     <div className="p-3 rounded-xl bg-white/3 border border-white/5">
                       <p className="text-xs text-gray-400 mb-2">Extracted Text Preview</p>
-                      <p className="text-xs text-gray-400 leading-relaxed whitespace-pre-wrap">{String(result.raw_text).slice(0, 400)}...</p>
+                      <p className="text-xs text-gray-400 leading-relaxed whitespace-pre-wrap">{String(result.raw_text)}</p>
                     </div>
                   )}
                 </div>
