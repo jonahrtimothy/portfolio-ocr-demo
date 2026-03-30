@@ -39,7 +39,13 @@ export default function DemoPage() {
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
-    accept: { "application/pdf": [".pdf"], "image/jpeg": [".jpg", ".jpeg"], "image/png": [".png"] },
+    accept: { 
+  "application/pdf": [".pdf"], 
+  "image/jpeg": [".jpg", ".jpeg"], 
+  "image/png": [".png"],
+  "image/tiff": [".tiff", ".tif"],
+  "image/bmp": [".bmp"],
+},
     maxFiles: 1,
   });
 
@@ -104,7 +110,7 @@ export default function DemoPage() {
                 <input {...getInputProps()} />
                 <Upload size={32} className="mx-auto mb-3 text-gray-600" />
                 <p className="text-sm text-gray-400 mb-1">Drop a PDF or image here</p>
-                <p className="text-xs text-gray-600">PDF, JPG, PNG supported</p>
+                <p className="text-xs text-gray-600">PDF, JPG, TIFF, PNG supported</p>
               </div>
 
               {file && (
