@@ -41,7 +41,7 @@ export async function POST(request: NextRequest) {
 
     // convert unsupported formats
     const converted = await convertToSupportedFormat(buffer, mediaType);
-    buffer    = converted.buffer;
+    buffer    = Buffer.from(converted.buffer);
     mediaType = converted.mediaType;
 
     const base64 = buffer.toString("base64");
