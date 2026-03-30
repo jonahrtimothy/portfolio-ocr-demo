@@ -1,22 +1,33 @@
 import { NextRequest, NextResponse } from "next/server";
-import { processDocumentWithClaude, HEALTHCARE_PROMPT, DOCUMENT_INTELLIGENCE_PROMPT } from "@/lib/claude";
+import {
+  processDocumentWithClaude,
+  DETECT_PROMPT,
+  getPromptForDocType,
+  DOCUMENT_INTELLIGENCE_PROMPT,
+} from "@/lib/claude";
 import sharp from "sharp";
 
 async function convertToSupportedFormat(
   buffer: Buffer,
   mediaType: string
 ): Promise<{ buffer: Buffer; mediaType: string }> {
-  // convert TIFF to PNG
   if (mediaType === "image/tiff" || mediaType === "image/tif") {
     const converted = await sharp(buffer).png().toBuffer();
     return { buffer: converted, mediaType: "image/png" };
   }
-  // convert BMP to PNG
   if (mediaType === "image/bmp") {
     const converted = await sharp(buffer).png().toBuffer();
     return { buffer: converted, mediaType: "image/png" };
   }
   return { buffer, mediaType };
+}
+
+function parseJSON(raw: string) {
+  try {
+    return JSON.parse(raw.replace(/```json|```/g, "").trim());
+  } catch {
+    return null;
+  }
 }
 
 export async function POST(request: NextRequest) {
@@ -29,45 +40,68 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "No file provided" }, { status: 400 });
     }
 
-    const bytes    = await file.arrayBuffer();
-    let buffer     = Buffer.from(bytes);
-    let mediaType  = file.type || "application/octet-stream";
+    const bytes   = await file.arrayBuffer();
+    let buffer    = Buffer.from(bytes);
+    let mediaType = file.type || "application/octet-stream";
 
-    // detect TIFF by filename if mime type is wrong
     const fname = file.name.toLowerCase();
-    if (fname.endsWith(".tiff") || fname.endsWith(".tif")) {
-      mediaType = "image/tiff";
-    }
+    if (fname.endsWith(".tiff") || fname.endsWith(".tif")) mediaType = "image/tiff";
 
-    // convert unsupported formats
     const converted = await convertToSupportedFormat(buffer, mediaType);
     buffer    = Buffer.from(converted.buffer);
     mediaType = converted.mediaType;
 
     const base64 = buffer.toString("base64");
 
-    const prompt = mode === "healthcare"
-      ? HEALTHCARE_PROMPT
-      : DOCUMENT_INTELLIGENCE_PROMPT;
+    let result;
 
-    const rawResult = await processDocumentWithClaude(base64, mediaType, prompt);
+    if (mode === "healthcare") {
 
-    let parsed;
-    try {
-      const cleaned = rawResult.replace(/```json|```/g, "").trim();
-      parsed = JSON.parse(cleaned);
-    } catch {
-      parsed = {
-        raw_text       : rawResult,
-        doc_type       : "unknown",
-        error          : "parse_failed",
-        debug_response : rawResult.slice(0, 500),
+      // step 1 — detect doc type
+      const detectRaw = await processDocumentWithClaude(base64, mediaType, DETECT_PROMPT);
+      const detected  = parseJSON(detectRaw);
+      const docType   = detected?.doc_type || "unknown";
+      const detConf   = detected?.confidence || 0;
+
+      console.log("Step 1 detected:", docType, detConf);
+
+      // step 2 — extract with specialist prompt
+      const extractPrompt = getPromptForDocType(docType);
+      console.log("Step 2 using prompt for:", docType);
+
+      const extractRaw = await processDocumentWithClaude(base64, mediaType, extractPrompt);
+      console.log("Step 2 raw length:", extractRaw.length);
+      console.log("Step 2 raw preview:", extractRaw.slice(0, 200));
+
+      const extractParsed = parseJSON(extractRaw);
+      console.log("Step 2 parsed:", extractParsed ? "OK" : "FAILED");
+
+      result = extractParsed
+        ? { ...extractParsed, detection_confidence: detConf }
+        : {
+            raw_text : extractRaw.slice(0, 500),
+            doc_type : docType,
+            error    : "step2_parse_failed",
+          };
+
+    } else {
+
+      // document intelligence mode — single pass
+      const raw = await processDocumentWithClaude(
+        base64,
+        mediaType,
+        DOCUMENT_INTELLIGENCE_PROMPT
+      );
+      result = parseJSON(raw) || {
+        raw_text : raw,
+        doc_type : "unknown",
+        error    : "parse_failed",
       };
     }
 
     return NextResponse.json({
       success  : true,
-      result   : parsed,
+      result,
       filename : file.name,
       filesize : file.size,
     });

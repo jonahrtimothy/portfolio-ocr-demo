@@ -1,12 +1,12 @@
 import { readFileSync } from 'fs';
 
-const filePath = "C:\\Jonah\\rcm-doc-intelligence\\corpus\\cms_forms\\cms1500_0000.pdf";;
+const filePath = "C:\\Jonah\\rcm-doc-intelligence\\corpus\\cms_forms\\cms1500_0000.pdf";
 const fileBytes = readFileSync(filePath);
 
 const formData = new FormData();
 const blob = new Blob([fileBytes], { type: 'application/pdf' });
-formData.append('file', blob, '00064657.pdf');
-formData.append('mode', 'intelligence');
+formData.append('file', blob, 'cms1500_0000.pdf');
+formData.append('mode', 'healthcare');
 
 console.log('Sending request...');
 
