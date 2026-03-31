@@ -32,7 +32,7 @@ export default function LandingPage() {
           Healthcare AI · RCM Automation · Document Intelligence
         </div>
 
-        <h1 className="text-6xl font-bold text-center mb-4 tracking-tight">
+        {/*<h1 className="text-6xl font-bold text-center mb-4 tracking-tight">
           Jonah <span className="text-blue-400">Timothy</span>
         </h1>
 
@@ -48,7 +48,7 @@ export default function LandingPage() {
         <div className="flex flex-wrap gap-4 justify-center mb-16">
           <a href="mailto:jonah.r.timothy@gmail.com" className="contact-link"><Mail size={14} /><span>jonah.r.timothy@gmail.com</span></a>
           <a href="https://linkedin.com/in/jonahtimothy" target="_blank" rel="noopener noreferrer" className="contact-link"><ExternalLink size={14} /><span>linkedin.com/in/jonahtimothy</span></a>
-        </div>
+        </div>*/}
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-3xl w-full mb-16">
           {[
@@ -71,7 +71,7 @@ export default function LandingPage() {
               <span className="text-sm font-medium text-gray-300">Request demo access</span>
             </div>
             <p className="text-xs text-gray-500 mb-4 leading-relaxed">
-              This demo is password protected. Contact me at <a href="mailto:jonah.r.timothy@gmail.com" className="text-blue-400">jonah.r.timothy@gmail.com</a> to get access.
+              This demo is password protected. Contact me at {/*<a href="mailto:jonah.r.timothy@gmail.com" className="text-blue-400">jonah.r.timothy@gmail.com</a>*/} to get access.
             </p>
             <form onSubmit={handleSubmit} className="flex flex-col gap-3">
               <input
