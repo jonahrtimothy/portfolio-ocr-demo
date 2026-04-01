@@ -97,7 +97,7 @@ export default function LandingPage() {
       </div>
       <footer className="text-center py-6 text-xs text-gray-600 border-t border-white/5">
         Built with Next.js · Claude AI · EasyOCR · PyMuPDF · FastAPI
-        <br /><span className="text-gray-700">2026 Jonah Timothy</span>
+        {/*<br /><span className="text-gray-700">2026 Jonah Timothy</span>*/}
       </footer>
     </main>
   );
